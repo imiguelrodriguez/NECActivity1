@@ -2,9 +2,9 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_absolu
 import matplotlib.pyplot as plt
 
 def print_errors(y_true, y_pred):
-  print('mean_squared_error : ', mean_squared_error(y_true, y_pred))
-  print('mean_absolute_error : ', mean_absolute_error(y_true, y_pred))
-  print('mean_absolute_percentage_error : ', mean_absolute_percentage_error(y_true, y_pred))
+  print('mean_squared_error : ', round(mean_squared_error(y_true, y_pred),2))
+  print('mean_absolute_error : ', round(mean_absolute_error(y_true, y_pred),2))
+  print('mean_absolute_percentage_error : ', round(mean_absolute_percentage_error(y_true, y_pred),2))
 
 def scatter(y_true, y_pred):
     plt.figure(figsize=(8, 6))
