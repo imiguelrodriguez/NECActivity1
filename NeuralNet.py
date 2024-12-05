@@ -1,12 +1,9 @@
 import pickle
 
 import numpy as np
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 
-# TODO if learn rate is 0.01 or 0.1 the loss is always the same
+
 class NeuralNet:
   def __init__(self, layers, epochs=200, learn_rate=0.001, momentum=0.9, fun="tanh", val_percentage=0.2):
     self.L = len(layers)
@@ -108,48 +105,6 @@ class NeuralNet:
       self.plot_loss()
 
     self.save_model(f"model_{self.fun}_{self.epochs}_{self.learn_rate}.pkl")
-  def update_weights(self):
-    for l in range(1, self.L):  # but  then the first layer is not updated??
-      # Update weights with momentum
-      self.d_w[l] = -self.learn_rate * np.outer(self.delta[l], self.xi[l - 1]) + self.momentum * self.d_w_prev[l]
-      self.d_w_prev[l] = self.d_w[l]
-      self.w[l] += self.d_w[l]
-
-      # Update thresholds with momentum
-      self.d_theta[l] = self.learn_rate * self.delta[l] + self.momentum * self.d_theta_prev[l]
-      self.d_theta_prev[l] = self.d_theta[l]
-      self.theta[l] += self.d_theta[l]
-
-  def plot_loss(self):
-    # Get the training and validation loss from the loss_epochs method
-    train_loss, val_loss = self.loss_epochs()
-
-    # Plot the training and validation errors
-    plt.plot(train_loss, label='Training Error')
-    if val_loss is not None:
-      plt.plot(val_loss, label='Validation Error')
-
-    # Add labels and title
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.title('Training and Validation Loss')
-
-    # Add legend
-    plt.legend()
-
-    # Show the plot
-    plt.pause(0.1)  # This makes the plot update in real-time
-  def predict(self, X):
-    predictions = []
-    for sample in X:
-      self.forward_pass(sample)
-      predictions.append(self.xi[-1])
-    return np.array(predictions)
-
-
-  def loss_epochs(self):
-    return np.array(self.train_loss), np.array(self.val_loss)
-
 
   def forward_pass(self,x):
     # ξ(1) = x in this case xi[0]
@@ -173,12 +128,37 @@ class NeuralNet:
     for l in range(self.L - 2, 0, -1):  # From second-to-last layer to first hidden layer
       # ∆(ℓ−1)_j = g′(h(ℓ−1)_j) * sum (∆(ℓ)_i * ω(ℓ)_ij)
       self.delta[l] = self.fact_derivatives(self.h[l]) * np.dot(self.w[l + 1].T, self.delta[l + 1])
+
+  def update_weights(self):
+    for l in range(1, self.L):  # but  then the first layer is not updated??
+      # Update weights with momentum
+      self.d_w[l] = -self.learn_rate * np.outer(self.delta[l], self.xi[l - 1]) + self.momentum * self.d_w_prev[l]
+      self.d_w_prev[l] = self.d_w[l]
+      self.w[l] += self.d_w[l]
+
+      # Update thresholds with momentum
+      self.d_theta[l] = self.learn_rate * self.delta[l] + self.momentum * self.d_theta_prev[l]
+      self.d_theta_prev[l] = self.d_theta[l]
+      self.theta[l] += self.d_theta[l]
+
+  def loss_epochs(self):
+    return np.array(self.train_loss), np.array(self.val_loss)
+
   def compute_loss(self, X, y):
     total_error = 0
     for i in range(X.shape[0]):
       self.forward_pass(X[i])
       total_error += np.sum((self.xi[-1] - y[i]) ** 2)
     return total_error / X.shape[0]
+
+  def predict(self, X):
+    predictions = []
+    for sample in X:
+      self.forward_pass(sample)
+      predictions.append(self.xi[-1])
+    return np.array(predictions)
+
+  # ACTIVATION FUNCTIONS
 
   def sigmoid(self, x):
     return 1/(1+np.exp(-x))
@@ -203,6 +183,8 @@ class NeuralNet:
 
   def tanh_derivative(self, x):
     return 1- np.tanh(x) ** 2
+
+  # SAVE / LOAD MODEL
 
   def save_model(self, file_name):
       """
@@ -251,65 +233,25 @@ class NeuralNet:
 
     print(f"Model loaded from {file_name}.")
 
-layers = [27, 9, 5, 1]
-nn = NeuralNet(layers)
+  # PLOTTING
 
-print("L = ", nn.L, end="\n")
-print("n = ", nn.n, end="\n")
+  def plot_loss(self):
+    # Get the training and validation loss from the loss_epochs method
+    train_loss, val_loss = self.loss_epochs()
 
-print("xi = ", nn.xi, end="\n")
-print("xi[0] = ", nn.xi[0], end="\n")
-print("xi[1] = ", nn.xi[1], end="\n")
+    # Plot the training and validation errors
+    plt.plot(train_loss, label='Training Error')
+    if val_loss is not None:
+      plt.plot(val_loss, label='Validation Error')
 
-print("wh = ", nn.w, end="\n")
-print("wh[1] = ", nn.w[1], end="\n")
+    # Add labels and title
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.title(f'Training and Validation Loss \n(learn_rate={self.learn_rate}, mom={self.momentum}, fact={self.fun}, layer_struc={self.n})')
 
+    # Add legend
+    plt.legend()
 
-# Load your dataset
-df = pd.read_csv('clean.csv')
-
-# Separate the features (X) and target (y)
-X = df.drop(columns=['price']).values
-y = df['price'].values
-
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Scale the features using StandardScaler
-scaler = MinMaxScaler()
-
-# Fit the scaler on the training data and transform both the training and test data
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
-
-# Initialize a scaler for the target variable
-y_scaler = MinMaxScaler()
-
-# Reshape y to be a 2D array (required for scalers)
-y_train_scaled = y_scaler.fit_transform(y_train.reshape(-1, 1)).flatten()
-y_test_scaled = y_scaler.transform(y_test.reshape(-1, 1)).flatten()
-
-# Now, train the neural network using the scaled data
-nn.fit(X_train_scaled, y_train_scaled)
-#nn.load_model('model.pkl')
-y_predicted  = nn.predict(X_test_scaled)
-y_predicted_descaled = y_scaler.inverse_transform(y_predicted)
-# Assuming y_predicted and y_test_scaled are numpy arrays or lists
-plt.figure(figsize=(8, 6))
-plt.scatter(y_test, y_predicted_descaled, alpha=0.6, color='blue', label='Predicted vs Actual')
-plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], 'r--', label='Ideal Prediction')
-plt.xlabel('Actual Scaled Prices (y_test_scaled)')
-plt.ylabel('Predicted Scaled Prices (y_predicted)')
-plt.title('Comparison of Predicted vs Actual Prices')
-plt.legend()
-plt.grid(True)
-plt.show()
-
-from sklearn.metrics import mean_squared_error, r2_score
-from sklearn.metrics import mean_absolute_error
-
-print(
-  'mean_squared_error : ', mean_squared_error(y_test.flatten(), y_predicted_descaled.flatten()))
-print(
-  'mean_absolute_error : ', mean_absolute_error(y_test.flatten(), y_predicted_descaled.flatten()))
-print(r2_score(y_test, y_predicted_descaled))
+    # Show the plot
+    plt.pause(0.1)  # This makes the plot update in real-time
+    plt.show()
