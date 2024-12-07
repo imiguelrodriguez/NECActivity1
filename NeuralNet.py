@@ -1,5 +1,4 @@
 import pickle
-import time
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -79,7 +78,7 @@ class NeuralNet:
         net.plot_loss()
     """
 
-    def __init__(self, layers, epochs=200, learn_rate=0.001, momentum=0.9, fun="tanh", val_percentage=0.2, save=False):
+    def __init__(self, layers, epochs=100, learn_rate=0.001, momentum=0.9, fun="tanh", val_percentage=0.2, save=False):
         self.L = len(layers)
         self.n = layers.copy()
         self.save = save
@@ -195,7 +194,7 @@ class NeuralNet:
         self.plot_loss()
 
         if self.save:
-            self.save_model(f"model_{self.fun}_{self.epochs}_{self.learn_rate}.pkl")
+            self.save_model(f"models/model_{self.fun}_{self.epochs}_{self.learn_rate}_{self.momentum}_{self.n}.pkl")
 
     def forward_pass(self, x: np.ndarray) -> None:
         """
@@ -249,7 +248,7 @@ class NeuralNet:
           previous updates are stored to implement the momentum.
 
     """
-        for l in range(1, self.L):  # but  then the first layer is not updated??
+        for l in range(1, self.L):
             # Update weights with momentum
             self.d_w[l] = -self.learn_rate * np.outer(self.delta[l], self.xi[l - 1]) + self.momentum * self.d_w_prev[l]
             self.d_w_prev[l] = self.d_w[l]
@@ -500,10 +499,6 @@ class NeuralNet:
         fig = plt.figure()
         ax = fig.add_subplot()
 
-        # Show the figure initially
-        fig.show()
-
-
         # Get the training and validation loss from the loss_epochs method
         train_loss, val_loss = self.loss_epochs()
 
@@ -520,9 +515,9 @@ class NeuralNet:
 
         # Add legend
         ax.legend()
-
+        fig.savefig(f"plots/plot_{self.fun}_{self.epochs}_{self.learn_rate}_{self.momentum}_{self.n}.png", format='png', bbox_inches='tight')
+        print(f"Plot saved to plots/plot_{self.fun}_{self.epochs}_{self.learn_rate}.png")
         # Redraw the plot
         fig.canvas.draw()
 
-        # Pause for a short time to update the plot in real-time
-        time.sleep(0.1)
+
