@@ -73,9 +73,6 @@ class NeuralNet:
 
         # Predict outputs for new inputs
         predictions = net.predict(new_X)
-
-        # Plot loss histories
-        net.plot_loss()
     """
 
     def __init__(self, layers, epochs=100, learn_rate=0.001, momentum=0.9, fun="tanh", val_percentage=0.2, save=False):
