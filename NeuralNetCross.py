@@ -98,25 +98,31 @@ class NeuralNetCross:
         else:
             self.fact = self.activation_functions[fun]
             self.fact_derivatives = self.derivatives[fun]
+        self.init_variables()
+        if k_fold_val < 2:
+            k_fold_val = 2
+        self.avg_train_loss = [[] for _ in range(k_fold_val)]
+        self.avg_val_loss = [[] for _ in range(k_fold_val)]
 
+    def init_variables(self):
         self.xi = []
         for lay in range(self.L):
-            self.xi.append(np.zeros(layers[lay]))
+            self.xi.append(np.zeros(self.n[lay]))
 
         self.w = []
         self.w.append(np.zeros((1, 1)))
         for lay in range(1, self.L):
-            self.w.append(np.random.randn(layers[lay], layers[lay - 1]) * np.sqrt(2. / layers[lay - 1]))
+            self.w.append(np.random.randn(self.n[lay], self.n[lay - 1]) * np.sqrt(2. / self.n[lay - 1]))
 
         self.theta = []
         self.delta = []
         for lay in range(self.L):
-            self.theta.append(np.random.randn(layers[lay]) * np.sqrt(2. / layers[lay]))
-            self.delta.append(np.zeros(layers[lay]))
+            self.theta.append(np.random.randn(self.n[lay]) * np.sqrt(2. / self.n[lay]))
+            self.delta.append(np.zeros(self.n[lay]))
 
         self.h = []
         for lay in range(self.L):
-            self.h.append(np.zeros((layers[lay], 1)))
+            self.h.append(np.zeros((self.n[lay], 1)))
 
         self.d_w = []
         self.d_w.append(np.zeros((1, 1)))
@@ -135,10 +141,6 @@ class NeuralNetCross:
         self.d_theta_prev = []
         for lay in range(self.L):
             self.d_theta_prev.append(np.zeros(self.n[lay]))
-        if k_fold_val < 2:
-            k_fold_val = 2
-        self.avg_train_loss = [[] for _ in range(k_fold_val)]
-        self.avg_val_loss = [[] for _ in range(k_fold_val)]
 
     def fit(self, X_train: np.ndarray, X_val: np.ndarray, y_train: np.ndarray, y_val: np.ndarray, fold: int) -> None:
         """
@@ -155,6 +157,8 @@ class NeuralNetCross:
         :param y: Target output data, with shape (num_samples, num_output_units).
         :type y: numpy.ndarray
         """
+        if fold > 0:
+            self.init_variables()
 
         num_patterns = X_train.shape[0]
         # Train and validation losses for all epochs
@@ -505,19 +509,19 @@ class NeuralNetCross:
         if not self.avg_train_loss or not self.avg_val_loss:
             raise ValueError("Training or validation loss data is empty. Ensure the network has been trained.")
 
+        train_loss, val_loss = self.loss_epochs()
         # Loop through each fold and plot the loss
         for fold in range(len(self.avg_train_loss)):
-            train_loss, val_loss = self.loss_epochs()
-            train_loss = train_loss[fold]
-            val_loss = val_loss[fold]
+            t_loss = train_loss[fold]
+            v_loss = val_loss[fold]
 
             # Create the figure and axis for plotting
             fig = plt.figure()
             ax = fig.add_subplot()
 
             # Plot the training and validation losses for the fold
-            ax.plot(train_loss, label='Training Loss', color='blue')
-            ax.plot(val_loss, label='Validation Loss', color='orange')
+            ax.plot(t_loss, label='Training Loss', color='blue')
+            ax.plot(v_loss, label='Validation Loss', color='orange')
 
             # Add labels and title
             ax.set_xlabel('Epochs')
