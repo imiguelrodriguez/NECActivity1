@@ -146,17 +146,33 @@ class NeuralNetCross:
         """
         Train the neural network using k-fold cross-validation.
 
-        This method divides the dataset into k folds for cross-validation. In each fold, the
-        network trains on k-1 folds and validates on the remaining fold. The average performance
-        across all folds is reported, and the training and validation loss are averaged and plotted
-        over the epochs.
+        This method trains the neural network on the training data (`X_train`, `y_train`)
+        while validating its performance on the validation data (`X_val`, `y_val`) for a
+        specific fold during k-fold cross-validation.
 
-        :param fold: number of current fold (for indexing).
-        :param X: Input data, with shape (num_samples, num_features).
-        :type X: numpy.ndarray
-        :param y: Target output data, with shape (num_samples, num_output_units).
-        :type y: numpy.ndarray
+        Key Steps:
+        - The training data is shuffled at the start of each epoch.
+        - The forward pass is used to compute activations for the current sample.
+        - The backward pass calculates errors and updates the network weights.
+        - Training and validation loss are computed for each epoch and stored.
+        - After all epochs, average losses are recorded for the given fold.
+
+        Optionally, the trained model is saved after completing training for the fold.
+
+        :param X_train: np.ndarray
+            Training input data with shape `(num_samples, num_features)`.
+        :param X_val: np.ndarray
+            Validation input data with shape `(num_samples, num_features)`.
+        :param y_train: np.ndarray
+            Training target data with shape `(num_samples, num_output_units)`.
+        :param y_val: np.ndarray
+            Validation target data with shape `(num_samples, num_output_units)`.
+        :param fold: int
+            The index of the current fold (for k-fold cross-validation).
+
+        :return: None
         """
+
         if fold > 0:
             self.init_variables()
 

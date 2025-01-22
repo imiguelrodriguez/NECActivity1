@@ -15,8 +15,11 @@ The project is organized as follows:
 - **`data_preprocessing.ipynb`**: Preprocesses the raw dataset to clean and prepare it for modeling.  
 - **`multi_linear_regression.ipynb`**: Implements flight price prediction using Sci-kit Learn's multi-linear regression.  
 - **`neural_network_pytorch.ipynb`**: Predicts flight prices using a neural network built with PyTorch.  
+- **`neural_network_pytorch_regularization.ipynb`**: Predicts flight prices using a neural network built with PyTorch, applying regularization techniques.
 - **`neural_network_self.ipynb`**: Flight price prediction using a custom-built neural network from scratch.  
+- **`neural_network_self_crossval.ipynb`**: Flight price prediction using a custom-built neural network from scratch (with k-fold cross-validation).
 - **`NeuralNet.py`**: Contains the implementation of the custom neural network.  
+- **`NeuralNetCross.py`**: Contains the implementation of the custom neural network supporting cross-validation.
 - **`utils.py`**: Provides utility functions for plotting and error calculation.  
 
 ## Directories
