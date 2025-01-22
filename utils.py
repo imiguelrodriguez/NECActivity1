@@ -1,8 +1,10 @@
+from typing import Tuple, Any
+
 from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_absolute_percentage_error
 import matplotlib.pyplot as plt
 
 
-def print_errors(y_true, y_pred) -> None:
+def print_errors(mse, mae, mape) -> None:
     """
         Print common regression error metrics.
 
@@ -21,10 +23,17 @@ def print_errors(y_true, y_pred) -> None:
 
         :return: None
     """
-    print('mean_squared_error : ', round(mean_squared_error(y_true, y_pred), 2))
-    print('mean_absolute_error : ', round(mean_absolute_error(y_true, y_pred), 2))
-    print('mean_absolute_percentage_error : ', round(mean_absolute_percentage_error(y_true, y_pred), 2))
 
+    print('mean_squared_error : ', mse)
+    print('mean_absolute_error : ', mae)
+    print('mean_absolute_percentage_error : ', mape)
+
+def compute_errors(y_true, y_pred) -> tuple[Any, Any, Any]:
+    mse = round(mean_squared_error(y_true, y_pred), 2)
+    mae = round(mean_absolute_error(y_true, y_pred), 2)
+    mape = round(mean_absolute_percentage_error(y_true, y_pred), 2)
+
+    return mse, mae, mape
 
 def scatter(y_true, y_pred) -> None:
     """
